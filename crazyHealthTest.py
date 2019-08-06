@@ -2,7 +2,6 @@ import logging
 import time
 from threading import Event
 
-import cflib.crtp
 from cflib.crazyflie.log import LogConfig
 from cflib.crazyflie import Crazyflie
 from cflib.positioning.motion_commander import MotionCommander
@@ -26,7 +25,14 @@ class HealthTest:
             self.propeller_test()
             
         else:
-            pass
+            self.hover_test()
+
+
+    def hover_test(self):
+        with MotionCommander(self.cf) as mc:
+            mc.take_off(0.5)
+            
+
 
     def propeller_test(self):
         self.cf.param.set_value('health.startPropTest', '0')
@@ -43,7 +49,6 @@ class HealthTest:
         """ Sends the results to the main gui object """
         self.main_gui.propeller_test_done(self.motorlog, self.uri)
         
-
     
     def add_callbacks(self):
         self.cf.connected.add_callback(self.connected)

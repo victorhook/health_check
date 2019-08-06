@@ -23,8 +23,8 @@ class MainFrame(tk.Frame):
         self.scroll.config(command=self.canvas.yview)
 
     def warning_msg(self, msg):
-        self.canvas.delete('warning')
-        self.canvas.create_text(385, 100, font='Courier 25', fill='red', text=msg, tags='warning')
+        self.canvas.create_text(385, 100, font='Courier 25', fill='red', 
+                                text=msg, tags='warning')
 
 
 class LogFrame():
@@ -40,7 +40,7 @@ class LogFrame():
         self.master.create_rectangle(self.x + self.pad, self.y + self.pad, self.x+255,
                                     self.y+145, width=2, outline='black', fill=gray, tags=self.uri)
 
-        self.master.create_text(self.x + 127, self.y + 25, text=uri, font='Courier 14 bold',
+        self.master.create_text(self.x + 130, self.y + 25, text=uri, font='Courier 11',
                                     fill=green, tags=self.uri)
 
 
@@ -52,6 +52,7 @@ class LogFrame():
         self.master.itemconfig(self.b_text, text='{}V'.format(b_text))
         self.master.coords(self.b_fill, self.x + 20, self.y + 125, self.x + b_fill,
                         self.y + 140)
+
 
     def show_battery(self):
         """ Battery visual bar, 0-4.2 Volt """
@@ -78,7 +79,7 @@ class LogFrame():
         self.master.create_text(self.x + 43, self.y + 75, text='M1', tags=self.uri,
                                 font='Courier 16')
         self.m1_text = self.master.create_text(self.x + 43, self.y + 100, text='', tags=self.uri,
-                                font='Courier 16')
+                                font='Courier 14')
         # Motor 2
         self.master.create_rectangle(self.x + 78, self.y + 60, self.x + 128, self.y + 120,
                                     outline='black', tags=self.uri)
@@ -87,7 +88,7 @@ class LogFrame():
         self.master.create_text(self.x + 103, self.y + 75, text='M2', tags=self.uri,
                                     font='Courier 16')
         self.m2_text = self.master.create_text(self.x + 103, self.y + 100, text='', tags=self.uri,
-                                font='Courier 16')
+                                font='Courier 14')
         # Motor 3
         self.master.create_rectangle(self.x + 138, self.y + 60, self.x + 188, self.y + 120,
                                     outline='black', tags=self.uri)
@@ -96,7 +97,7 @@ class LogFrame():
         self.master.create_text(self.x + 163, self.y + 75, text='M3', tags=self.uri,
                                     font='Courier 16')
         self.m3_text = self.master.create_text(self.x + 160, self.y + 100, text='', tags=self.uri,
-                                font='Courier 16')
+                                font='Courier 14')
         # Motor 4
         self.master.create_rectangle(self.x + 198, self.y + 60, self.x + 248, self.y + 120,
                                     outline='black', tags=self.uri)
@@ -105,7 +106,28 @@ class LogFrame():
         self.master.create_text(self.x + 223, self.y + 75, text='M4', tags=self.uri,
                                     font='Courier 16')
         self.m4_text = self.master.create_text(self.x + 223, self.y + 100, text='', tags=self.uri,
-                                font='Courier 16')
+                                font='Courier 14')
+
+
+    def reset_motors(self):
+        self.master.itemconfig(self.m1_text, text='')
+        self.master.itemconfig(self.m2_text, text='')
+        self.master.itemconfig(self.m3_text, text='')
+        self.master.itemconfig(self.m4_text, text='')
+
+        self.master.itemconfig(self.m1_fill, fill='green')
+        self.master.itemconfig(self.m2_fill, fill='green')
+        self.master.itemconfig(self.m3_fill, fill='green')
+        self.master.itemconfig(self.m4_fill, fill='green')
+
+        self.master.coords(self.m1_fill, self.x + 18, self.y + 120, 
+                        self.x + 68, self.y + 120)
+        self.master.coords(self.m2_fill, self.x + 78, self.y + 120, 
+                        self.x + 128, self.y + 120)
+        self.master.coords(self.m3_fill, self.x + 138, self.y + 120, 
+                            self.x + 188, self.y + 120)
+        self.master.coords(self.m4_fill, self.x + 198, self.y + 120, 
+                            self.x + 248, self.y + 120)
 
 
     def update_motors(self, thrust_fill, thrust_text):
@@ -199,15 +221,23 @@ class Calculate:
 
     @staticmethod
     def row_and_col(uris):
+        """ Calculates row and columns, given all the uris """
         row = int( len(uris) / 3 )
         column = len(uris) % 3
         return row, column
 
     @staticmethod
     def propeller_result(motorlog):
+        """ Returns results in readable form from the propeller test """
         binary = '{0:b}'.format(motorlog)
         motors = [binary[7], binary[6], binary[5], binary[4]]
         results =  ["GOOD" if motor=="1" else "BAD" for motor in motors]
         colors = ['green' if result=='GOOD' else 'red' for result in results]
         return results, colors
+
+    @staticmethod
+    def new_placements(i):
+        """ Returns new row and column """
+        return int(i / 3), i % 3
+
     
