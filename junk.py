@@ -1,10 +1,13 @@
-import cflib.crtp
+from queue import Queue
+from threading import Thread
 
-from cflib.crazyflie import Crazyflie
+def f1():
+    print('Function one')
 
+def f2():
+    print('Function two')
 
-cflib.crtp.init_drivers(enable_debug_driver=False)
-uri = 'radio://0/10/2M/E7E7E7E702'
-cf = Crazyflie(rw_cache='./cache')
+t1 = Thread(target=f1)
+t2 = Thread(target=f2)
 
-cf.open_link(uri)
+print(dir(t1))

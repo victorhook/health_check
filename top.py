@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 
 green = '#95C943'
-gray = '#676767'
 
 class TopFrame(tk.Frame):
     """
@@ -15,7 +14,6 @@ class TopFrame(tk.Frame):
         self.main_gui = main_gui
         self.pack()
         self.grid_propagate(0)
-
         self.show_uri_box()
         self.show_buttons()
         self.show_test_options()
@@ -63,9 +61,13 @@ class TopFrame(tk.Frame):
         self.uriscroll.pack(side='right', fill='y')
         self.uribox['yscrollcommand'] = self.uriscroll.set
 
-    # Callback from buttons
 
+    # Callback from buttons
+    def _add(self):
+        popup = Popup(self)
+    
     def add_uri(self, uri):
+        """ Gets called from the popup window """
         self.main_gui.add_uri(uri)
 
     def _del(self):
@@ -77,10 +79,10 @@ class TopFrame(tk.Frame):
             pass
 
     def _clear(self):
+        self.uribox.delete(0, 'end')
         self.main_gui.clear_uris()
 
     def _start(self):
-
         if not self.main_gui.uris:
             self.main_gui.warning_msg('You need to add a URI first')
 
@@ -89,8 +91,6 @@ class TopFrame(tk.Frame):
         else:
             self.main_gui.run_test('hover')
             
-    def _add(self):
-        popup = Popup(self)
 
 
 class Popup:
@@ -100,20 +100,22 @@ class Popup:
 
         self.popup = tk.Toplevel()
         self.popup.title('Add URI')
+        self.popup.bind('<Return>', self.add_uri)
         self.master = master
-        off_y = int( (master.winfo_screenheight() - 600) / 6 )
-        off_x = int( (master.winfo_screenwidth() - 800) / 2 )
+        off_y = int( (master.winfo_screenheight() - 120) / 6 )
+        off_x = int( (master.winfo_screenwidth() - 250) / 2 )
         self.popup.geometry('250x120+{}+{}'.format(off_x, off_y))
 
         self.uri = tk.Entry(self.popup, font='Coself.urier 12', width=28, bd=2, relief='ridge',
                             highlightthickness=0)
         self.uri.pack(pady=20)
         self.uri.insert(0, 'radio://0/10/2M/E7E7E7E7E7')
+        self.uri.focus_set()
 
         self.add_btn = TopButton(self.popup, 'ADD', command=self.add_uri, font='Courier 20', width=6)
         self.add_btn.pack(pady=10)
 
-    def add_uri(self):
+    def add_uri(self, event=None):
         self.master.add_uri(self.uri.get())
         self.popup.destroy()
         del self
