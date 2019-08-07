@@ -1,5 +1,7 @@
 class Calculate:
 
+    """ Has all basic arithmetic calculations and conversions """
+
     @staticmethod
     def motor_fill(motor_values):
         """
