@@ -8,6 +8,7 @@ from cflib.positioning.motion_commander import MotionCommander
 
 logging.basicConfig(level=logging.ERROR)
 
+
 class HealthTest:
 
     """
@@ -26,7 +27,9 @@ class HealthTest:
         self.motor_means = [0, 0, 0, 0]
         self.motor_mean_counter = 0
         self._connect = Event()
+        self._logconfig = Event()
         self.test = test
+        self.variance = {}
     
     
     def open_link(self):
@@ -45,11 +48,14 @@ class HealthTest:
             self.cf.open_link(self.uri)
             self._connect.wait()
 
+
             if not self.link_is_open:
                 self.remove_callbacks()
                 self.main_gui.warning_msg("Couldn't open link")
             else:
                 self.add_logconfigs()
+                self._logconfig.wait()
+
 
             return self
 
@@ -62,45 +68,46 @@ class HealthTest:
 
     def hover_test(self):
         """ 
-        Takes off and hovers at 0.5m for 5 seconds.
+        Takes off and hovers at x m for y seconds.
+        Default is 0.5m and 5 seconds.
         A mean motor thrust for each motor is taken and
         passed to the main gui for calculations.
         """
+        height = 0.5
+        duration = 5
+
         self.main_gui.running_test(self.uri)
         
         MotionCommander.VELOCITY = 0.8
-        with MotionCommander(self.cf, 0.5) as mc:
+        with MotionCommander(self.cf, height) as mc:
             self.is_hover_test_running = True
             mc.stop()
-            time.sleep(5)
+            time.sleep(duration)
 
-        time.sleep(0.1)
-        means = [(total / self.motor_mean_counter) for total in self.motor_means]
-        self.main_gui.hover_test_done(self.uri, means)
-
+        self.hover_test_done()
 
     def propeller_test(self):
         self.main_gui.running_test(self.uri)
-        DONE = False
 
         self.cf.param.set_value('health.startPropTest', '0')
         time.sleep(0.2)
+
+        self.initial_counter = self.motor_pass_counter
+
         self.cf.param.set_value('health.startPropTest', "1")
         time.sleep(5)
 
-        while not DONE:
-            try:
-                time.sleep(0.1)
-                print(self.motorlog)
-                if self.motorlog > 128:
-                    DONE = True
-                    break
-            except:
-                pass            
+        while self.initial_counter == self.motor_pass_counter:
+            time.sleep(0.1)
 
-        time.sleep(0.1)
         self.propeller_test_done()
 
+
+    def hover_test_done(self):
+        try:
+            means = [(total / self.motor_mean_counter) for total in self.motor_means]
+        finally:
+            self.main_gui.hover_test_done(self.uri, means)
 
     def propeller_test_done(self):
         """ Sends the results to the main gui object """
@@ -141,11 +148,13 @@ class HealthTest:
         self._log.add_variable("pwm.m3_pwm", "uint32_t")
         self._log.add_variable("pwm.m4_pwm", "uint32_t")
         self._log.add_variable("pm.vbatMV", "uint16_t")
+        self._log.add_variable('health.motorTestCount', 'uint16_t')
         self._log.add_variable('health.motorPass', 'uint8_t')
         self._log.data_received_cb.add_callback(self.log_callback)
 
         self.cf.log.add_config(self._log)
         self._log.start()
+        self._logconfig.set()
 
 
     def log_callback(self, timestamp, data, logconf):
@@ -155,6 +164,7 @@ class HealthTest:
         motor_values = [m1, m2, m3, m4]
         battery = data['pm.vbatMV']
         self.motorlog = data['health.motorPass']
+        self.motor_pass_counter = data['health.motorTestCount']
 
         if self.is_hover_test_running:
             for i, data in enumerate(motor_values):
@@ -171,32 +181,20 @@ class HealthTest:
         self._connect.set()
         self.main_gui.connected(self.uri)
 
-
     def disconnected(self, *args):
-        print(*args)
         self.main_gui.disconnected(self.uri)
-
 
     def connection_failed(self, *args):
         self.main_gui.connection_failed(self.uri)
 
-
     def connection_lost(self, *args):
         self.main_gui.connection_lost(self.uri)
 
-    
+        
     def __enter__(self):
         """ In case of use with wrapper """
         self.open_link()
 
-
     def __exit__(self, *args):
         """ In case of use with wrapper """
         self.close_link()
-
-    
-
-
-    
-
-    

@@ -1,3 +1,8 @@
+# BAD_MOTOR_LIMIT is how much off a motor can be compared to 
+# the rest, in percentage. Default is 15%.
+
+BAD_MOTOR_LIMIT = 15
+
 class Calculate:
 
     """ Has all basic arithmetic calculations and conversions """
@@ -40,8 +45,8 @@ class Calculate:
     @staticmethod
     def propeller_result(motorlog):
         """ Returns results in readable form from the propeller test """
-        binary = '{0:b}'.format(motorlog)
-        motors = [binary[7], binary[6], binary[5], binary[4]]
+        binary = '{0:04b}'.format(motorlog)
+        motors = [binary[3], binary[2], binary[1], binary[0]]
         results =  ["GOOD" if motor=="1" else "BAD" for motor in motors]
         colors = ['green' if result=='GOOD' else 'red' for result in results]
         return results, colors
@@ -62,7 +67,7 @@ class Calculate:
         motor_results = []
 
         for mean in means:
-            if abs(mean - average) > 20:
+            if abs(mean - average) > BAD_MOTOR_LIMIT:
                 motor_results.append('0')
             else:
                 motor_results.append('1')

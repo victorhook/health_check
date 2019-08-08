@@ -20,8 +20,11 @@ class MainFrame(tk.Frame):
         self.scroll = tk.Scrollbar(self, width=30, orient='vertical')
         self.scroll.pack(side='right', fill='y')
 
-        self.canvas.config(yscrollcommand=self.scroll.set, scrollregion=self.canvas.bbox('all'))
+        self.canvas.config(yscrollcommand=self.scroll.set)
         self.scroll.config(command=self.canvas.yview)
+
+    def update_canvas_scroll(self):
+        self.canvas.config(scrollregion=self.canvas.bbox('all'))
 
     def warning_msg(self, msg):
         self.canvas.create_text(385, 100, font='Courier 25', fill='red', 
@@ -43,6 +46,7 @@ class LogFrame():
         self.x = 255 * column
         self.y = 145 * row
         self.pad = 10
+        self.test_is_done = False
 
         self.master.create_rectangle(self.x + self.pad, self.y + self.pad, self.x+255,
                                     self.y+145, width=2, outline='black', fill=gray, tags=self.uri)
@@ -75,7 +79,7 @@ class LogFrame():
                                 tags=self.uri, fill='green')
         self.master.create_text(self.x + 43, self.y + 75, text='M1', tags=self.uri,
                                 font='Courier 16')
-        self.m1_text = self.master.create_text(self.x + 43, self.y + 100, text='', tags=self.uri,
+        self.m1_text = self.master.create_text(self.x + 45, self.y + 100, text='', tags=self.uri,
                                 font='Courier 14')
         # Motor 2
         self.master.create_rectangle(self.x + 78, self.y + 60, self.x + 128, self.y + 120,
@@ -176,6 +180,7 @@ class LogFrame():
 
 
     def reset_motors(self):
+        self.test_is_done = False
         self.master.itemconfig(self.m1_text, text='')
         self.master.itemconfig(self.m2_text, text='')
         self.master.itemconfig(self.m3_text, text='')

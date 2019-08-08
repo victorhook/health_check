@@ -37,6 +37,7 @@ class Gui:
                 self.topframe.uribox.insert('end', uri)
                 row, column = Calculate.row_and_col(self.uris)
                 self.uris[uri] = LogFrame(self.mainframe.canvas, row, column, uri)
+                self.mainframe.update_canvas_scroll()
             else:
                 self.mainframe.warning_msg('You already have that URI added')
 
@@ -112,19 +113,24 @@ class Gui:
         This gets sent to the LogFrame object that can represent
         the values visually
         """
-        motor_text = Calculate.motor_text(motor_values)
-        motor_fill = Calculate.motor_fill(motor_values)
-        b_text, b_fill = Calculate.battery(battery)
-
-        self.uris[uri].update_motors(motor_fill, motor_text)
-        self.uris[uri].update_battery(b_text, b_fill)
+        if not self.uris[uri].test_is_done:
+            motor_text = Calculate.motor_text(motor_values)
+            motor_fill = Calculate.motor_fill(motor_values)
+            b_text, b_fill = Calculate.battery(battery)
+        
+            self.uris[uri].update_motors(motor_fill, motor_text)
+            self.uris[uri].update_battery(b_text, b_fill)
 
 
     def hover_test_done(self, uri, means):
+        self.uris[uri].test_is_done = True
+        time.sleep(0.1)
         results, colors = Calculate.is_mean_ok(means)
         self.uris[uri].update_motor_status(results, colors)
 
     def propeller_test_done(self, motorlog, uri):
+        self.uris[uri].test_is_done = True
+        time.sleep(0.1)
         results, colors = Calculate.propeller_result(motorlog)
         self.uris[uri].update_motor_status(results, colors)
 
