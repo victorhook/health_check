@@ -5,3 +5,5 @@ of all the motors to see if any of them differ largely from the other ones.
 Both of the tests rank the motor/propellers as good/bad and the default
 threshold for the motor-test is 15% but can be changed.
 You can test multiple Crazyflies simultaneously.
+
+Run the main.py to start the GUI.
